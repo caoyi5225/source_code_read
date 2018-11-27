@@ -73,6 +73,7 @@ export function createProvider(storeKey = 'store') {
 
 因为connectAdvance的返回值是一个HOC(高阶组件),所以不熟悉HOC的话可以移步[HOC](https://react.docschina.org/docs/higher-order-components.html)
 ```javascript
+
 export default function connectAdvanced(
 
   /**
@@ -111,6 +112,7 @@ export default function connectAdvanced(
   } = {}
 ) {
   const subscriptionKey = storeKey + 'Subscription'
+  // 热加载版本
   const version = hotReloadingVersion++
 
   const contextTypes = {
@@ -122,6 +124,7 @@ export default function connectAdvanced(
   }
 
   return function wrapWithConnect(WrappedComponent) {
+    // 如果不是生产环境,检测被HOC包裹的对象是否为合法的组件
     if (process.env.NODE_ENV !== 'production') {
       invariant(
         isValidElementType(WrappedComponent),
@@ -136,7 +139,9 @@ export default function connectAdvanced(
 
     const displayName = getDisplayName(wrappedComponentName)
 
+    // 要传给selectorFactory的参数
     const selectorFactoryOptions = {
+      // 用户要传入的参数
       ...connectOptions,
       getDisplayName,
       methodName,
@@ -156,7 +161,9 @@ export default function connectAdvanced(
         this.state = {}
         this.renderCount = 0
         this.store = props[storeKey] || context[storeKey]
+        // 从props是否传入了store
         this.propsMode = Boolean(props[storeKey])
+        // for ref
         this.setWrappedInstance = this.setWrappedInstance.bind(this)
 
         invariant(this.store,
@@ -211,24 +218,37 @@ export default function connectAdvanced(
       }
 
       initSelector() {
+        // 为selectorFactory注入dispatch
         const sourceSelector = selectorFactory(this.store.dispatch, selectorFactoryOptions)
+        // 为selector注入state,并通过mapstate计算nextProps来标记是否需要更新组件
+        // props和nextProps存储在selector中,在两次run时用来比较
         this.selector = makeSelectorStateful(sourceSelector, this.store)
         this.selector.run(this.props)
       }
 
       initSubscription() {
+        // 不监听直接返回
         if (!shouldHandleStateChanges) return
+        // 如果是props传来的store则从props订阅,如果不是则从context订阅
         const parentSub = (this.propsMode ? this.props : this.context)[subscriptionKey]
+        // 为当前组件创建一个新的订阅
         this.subscription = new Subscription(this.store, parentSub, this.onStateChange.bind(this))
         this.notifyNestedSubs = this.subscription.notifyNestedSubs.bind(this.subscription)
       }
 
+      // state改变的回调
       onStateChange() {
+        // 比较props, 看是否需要更新组件
         this.selector.run(this.props)
 
+        // 如果props没变,不需要更新组件,则通知下边的组件store改变,检测是否需要更新
+        // 如果触发了更新,则通过setState强制更新,通过didupdate延后通知子组件检查更新
+        // !!!在本组件update之后,子组件实际已经update,所以在didupdate后通知子组件检查更新
+        // 并不会造成再次渲染子组件,不需要担心嵌套connect的性能问题
         if (!this.selector.shouldComponentUpdate) {
           this.notifyNestedSubs()
         } else {
+          // 在didupdate延后通知子组件检查更新
           this.componentDidUpdate = this.notifyNestedSubsOnComponentDidUpdate
           this.setState(dummyState)
         }
@@ -272,6 +292,10 @@ export default function connectAdvanced(
 
     if (process.env.NODE_ENV !== 'production') {
       Connect.prototype.componentWillUpdate = function componentWillUpdate() {
+        // 处理热加载
+        // 如果版本号改变则说明出发了热加载
+        // 更新版本号
+        // 重新初始化订阅,并解除订阅后重新订阅原有订阅
         if (this.version !== version) {
           this.version = version
           this.initSelector()
@@ -291,6 +315,101 @@ export default function connectAdvanced(
     }
 
     return hoistStatics(Connect, WrappedComponent)
+  }
+}
+```
+
+## Subscription
+订阅的实现是整个框架实现的核心部分之一, 它让每个Container管理自己的一个订阅状态, 并通过将子树叶的订阅集中在父树叶处理,来确保每次state更新造成的dom更新是自上而下的,保证了子树叶不会重复更新
+```javascript
+// encapsulates the subscription logic for connecting a component to the redux store, as
+// well as nesting subscriptions of descendant components, so that we can ensure the
+// ancestor components re-render before descendants
+
+const CLEARED = null
+const nullListeners = { notify() {} }
+
+function createListenerCollection() {
+  // the current/next pattern is copied from redux's createStore code.
+  // TODO: refactor+expose that code to be reusable here?
+  let current = []
+  let next = []
+
+  return {
+    clear() {
+      next = CLEARED
+      current = CLEARED
+    },
+
+    notify() {
+      const listeners = current = next
+      for (let i = 0; i < listeners.length; i++) {
+        listeners[i]()
+      }
+    },
+
+    get() {
+      return next
+    },
+
+    subscribe(listener) {
+      let isSubscribed = true
+      if (next === current) next = current.slice()
+      next.push(listener)
+
+      return function unsubscribe() {
+        if (!isSubscribed || current === CLEARED) return
+        isSubscribed = false
+
+        if (next === current) next = current.slice()
+        next.splice(next.indexOf(listener), 1)
+      }
+    }
+  }
+}
+
+export default class Subscription {
+  constructor(store, parentSub, onStateChange) {
+    this.store = store
+    this.parentSub = parentSub
+    this.onStateChange = onStateChange
+    this.unsubscribe = null
+    this.listeners = nullListeners
+  }
+
+  addNestedSub(listener) {
+    this.trySubscribe()
+    return this.listeners.subscribe(listener)
+  }
+
+  notifyNestedSubs() {
+    this.listeners.notify()
+  }
+
+  isSubscribed() {
+    return Boolean(this.unsubscribe)
+  }
+
+  trySubscribe() {
+    if (!this.unsubscribe) {
+      // !!!划重点!敲黑板!
+      // 没有父级观察者的话，直接监听store change
+      // 有的话，添到父级下面，由父级传递变化
+      this.unsubscribe = this.parentSub
+        ? this.parentSub.addNestedSub(this.onStateChange)
+        : this.store.subscribe(this.onStateChange)
+ 
+      this.listeners = createListenerCollection()
+    }
+  }
+
+  tryUnsubscribe() {
+    if (this.unsubscribe) {
+      this.unsubscribe()
+      this.unsubscribe = null
+      this.listeners.clear()
+      this.listeners = nullListeners
+    }
   }
 }
 ```
