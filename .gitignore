@@ -1,3 +1,6 @@
 # 屏蔽vim缓存文件
 *.swp
 
+# 屏蔽node_modules
+node_modules
+
