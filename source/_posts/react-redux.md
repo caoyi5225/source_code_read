@@ -1,6 +1,6 @@
 ---
 title: react-redux 源码解析
-date: 2019-01-31 12:40:10
+date: 2018-11-27 12:40:10
 tags:
 ---
 
@@ -105,7 +105,7 @@ export default function connectAdvanced(
     // 表明HOC是否订阅state改变
     shouldHandleStateChanges = true,
 
-    // 从context/props中获取store的key
+    // 从contextprops中获取store的key
     storeKey = 'store',
 
     // 是否需要ref,详见HOC介绍
