@@ -1,7 +1,7 @@
 # Then/Promise 源码解析
 Then/Promise 是ES6 Promise的一个polyfill, 学习其源码有助于我们深入理解Promise
 
-1. Promise构造函数
+1. Promise类
 ```javascript
 function Promise(fn) {
   if (typeof this !== 'object') {
@@ -106,5 +106,61 @@ function reject(self, newValue) {
     Promise._onReject(self, newValue);
   }
   finale(self);
+}
+```
+reject方法相对简单, state置为2, 赋值_value, 执行Promise._onReject, 执行finale
+
+5. then方法
+```javascript
+Promise.prototype.then = function(onFulfilled, onRejected) {
+  if (this.constructor !== Promise) {
+    return safeThen(this, onFulfilled, onRejected);
+  }
+  var res = new Promise(noop);
+  handle(this, new Handler(onFulfilled, onRejected, res));
+  return res;
+};
+```
+then方法是实现链式调用的核心, 实现原理就是每次都返回一个新的promise.另外, then将生成一个异步任务在resolve之后执行
+
+6. Handler类
+```javascript
+function Handler(onFulfilled, onRejected, promise){
+  this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
+  this.onRejected = typeof onRejected === 'function' ? onRejected : null;
+  this.promise = promise;
+}
+```
+该类的属性:
+|名称|类型|默认值|描述|
+|----|----|------|----|
+|onFulfilled|Function|null|resolve的回调|
+|onRejected|Function|null|reject的回调|
+|promise|Function|null|要返回的新promise|
+
+7. handle方法
+```javascript
+function handle(self, deferred) {
+  while (self._state === 3) {
+    self = self._value;
+  }
+  if (Promise._onHandle) {
+    Promise._onHandle(self);
+  }
+  if (self._state === 0) {
+    if (self._deferredState === 0) {
+      self._deferredState = 1;
+      self._deferreds = deferred;
+      return;
+    }
+    if (self._deferredState === 1) {
+      self._deferredState = 2;
+      self._deferreds = [self._deferreds, deferred];
+      return;
+    }
+    self._deferreds.push(deferred);
+    return;
+  }
+  handleResolved(self, deferred);
 }
 ```
