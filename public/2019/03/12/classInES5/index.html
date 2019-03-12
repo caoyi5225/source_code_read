@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="ES5的标准里没有类的概念, 所以大牛们创造了很多创建对象和模拟类的方法 工厂模式工厂模式是一种常用的设计模式,将对象的创建过程抽象到一个函数中123456789101112function createStudent(name, age, id) &amp;#123;  var o = new Object();   o.name = name;  o.age = age;  o.id = id;  o">
+<meta property="og:type" content="article">
+<meta property="og:title" content="对象创建&amp;类的实现">
+<meta property="og:url" content="https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/index.html">
+<meta property="og:site_name" content="Shadow&#39;s Blog">
+<meta property="og:description" content="ES5的标准里没有类的概念, 所以大牛们创造了很多创建对象和模拟类的方法 工厂模式工厂模式是一种常用的设计模式,将对象的创建过程抽象到一个函数中123456789101112function createStudent(name, age, id) &amp;#123;  var o = new Object();   o.name = name;  o.age = age;  o.id = id;  o">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-03-12T08:32:44.583Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="对象创建&amp;类的实现">
+<meta name="twitter:description" content="ES5的标准里没有类的概念, 所以大牛们创造了很多创建对象和模拟类的方法 工厂模式工厂模式是一种常用的设计模式,将对象的创建过程抽象到一个函数中123456789101112function createStudent(name, age, id) &amp;#123;  var o = new Object();   o.name = name;  o.age = age;  o.id = id;  o">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/source_code_read/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/source_code_read/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/source_code_read/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>对象创建&amp;类的实现</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/source_code_read/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/source_code_read/">Home</a></li>
+         
+          <li><a href="/source_code_read/archives/">Writing</a></li>
+        
+      </ul>
+    </span>
+    <br>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" href="/source_code_read/2019/03/04/inheritAndProperty/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover="$("#i-next").toggle();" onmouseout="$("#i-next").toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover="$("#i-top").toggle();" onmouseout="$("#i-top").toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover="$("#i-share").toggle();" onmouseout="$("#i-share").toggle();" onclick="$("#share").toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&text=对象创建&amp;类的实现"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&title=对象创建&amp;类的实现"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&is_video=false&description=对象创建&amp;类的实现"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=对象创建&amp;类的实现&body=Check out this article: https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&title=对象创建&amp;类的实现"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&title=对象创建&amp;类的实现"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&title=对象创建&amp;类的实现"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&title=对象创建&amp;类的实现"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&name=对象创建&amp;类的实现&description="><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#工厂模式"><span class="toc-number">1.</span> <span class="toc-text">工厂模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#构造函数模式"><span class="toc-number">2.</span> <span class="toc-text">构造函数模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#组合模式-构造函数-原型模式"><span class="toc-number">3.</span> <span class="toc-text">组合模式(构造函数+原型模式)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#寄生构造函数模式"><span class="toc-number">4.</span> <span class="toc-text">寄生构造函数模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#稳妥构造函数模式"><span class="toc-number">5.</span> <span class="toc-text">稳妥构造函数模式</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index width mx-auto px2 my4">
+        
+        <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        对象创建&amp;类的实现
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+        <span itemprop="name">Shadow's Blog</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2019-03-12T08:26:22.000Z" itemprop="datePublished">2019-03-12</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>ES5的标准里没有类的概念, 所以大牛们创造了很多创建对象和模拟类的方法</p>
+<h2 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h2><p>工厂模式是一种常用的设计模式,将对象的创建过程抽象到一个函数中<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createStudent</span>(<span class="params">name, age, id</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> o = <span class="keyword">new</span> <span class="built_in">Object</span>(); </span><br><span class="line">  o.name = name;</span><br><span class="line">  o.age = age;</span><br><span class="line">  o.id = id;</span><br><span class="line">  o.getId = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> o.id;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> o;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> obj = createStudent(<span class="string">'Shadow'</span>, <span class="number">18</span>, <span class="number">13201</span>);</span><br></pre></td></tr></table></figure></p>
+<h2 id="构造函数模式"><a href="#构造函数模式" class="headerlink" title="构造函数模式"></a>构造函数模式</h2><p>构造函数是用来创建某种特定类型对象的函数,比如原生的Object, Array等,<br>当然我们也可以自己创建构造函数:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Student</span>(<span class="params">name, age, id</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.name = name;</span><br><span class="line">  <span class="keyword">this</span>.age = age;</span><br><span class="line">  <span class="keyword">this</span>.id = id;</span><br><span class="line">  <span class="keyword">this</span>.getId() = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.id;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> obj = <span class="keyword">new</span> Student(<span class="string">'Shadow'</span>, <span class="number">18</span>, <span class="number">13201</span>);</span><br></pre></td></tr></table></figure></p>
+<p>注意此构造函数与工厂函数的区别:</p>
+<ol>
+<li>命名区别: createStudent –&gt; Student, 此处构造函数命名与类的命名一致;</li>
+<li>未在函数内部创建新对象, 而是直接把属性和方法赋值给了this;</li>
+<li>未写return语句;</li>
+<li>创建对象时使用了new操作符.<br>这些区别的原因就在new操作符的作用上(引自《JavaScript高级程序设计(第3版)》):<blockquote>
+<p>（1）创建一个新对象；<br>（2）将构造函数的作用域赋给新对象（因此this就指向了这个新对象）；<br>（3）执行构造函数中的代码（为这个新对象添加属性）；<br>（4）返回新对象。</p>
+</blockquote>
+</li>
+</ol>
+<p>💡tips: 关于return语句, 如果构造函数内写了return语句, 那么会覆盖new最后一步返回return语句值(必须是对象,⚠️ null不是对象!!):<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Student</span>(<span class="params">name, age, id</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.name = name;</span><br><span class="line">  <span class="keyword">this</span>.age = age;</span><br><span class="line">  <span class="keyword">this</span>.id = id;</span><br><span class="line">  <span class="keyword">this</span>.getId = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.id;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> &#123; <span class="attr">test</span>: <span class="number">1</span> &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> obj = <span class="keyword">new</span> Student(<span class="string">'Shadow'</span>, <span class="number">18</span>, <span class="number">13201</span>);</span><br><span class="line"><span class="comment">// obj: &#123;test: 1&#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>构造函数存在的问题:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Student</span>(<span class="params">name, age, id</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.name = name;</span><br><span class="line">  <span class="keyword">this</span>.age = age;</span><br><span class="line">  <span class="keyword">this</span>.id = id;</span><br><span class="line">  <span class="keyword">this</span>.getId = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.id;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> shadow = <span class="keyword">new</span> Student(<span class="string">'Shadow'</span>, <span class="number">18</span>, <span class="number">13201</span>);</span><br><span class="line"><span class="keyword">var</span> shine = <span class="keyword">new</span> Student(<span class="string">'Sine'</span>, <span class="number">16</span>, <span class="number">13201</span>);</span><br></pre></td></tr></table></figure></p>
+<p>如上所见, 我们定义了一个Student类, 包含一个getId的方法, 之后用这个类创建了两个对象<br>‘shadow’和’shine’, 它们的getId方法都是不同的引用, 而实际上这样是没有必要的, 因为getId的作用一致,<br>所以不同的对象使用同一个方法就可以了, 这样造成了空间的浪费</p>
+<h2 id="组合模式-构造函数-原型模式"><a href="#组合模式-构造函数-原型模式" class="headerlink" title="组合模式(构造函数+原型模式)"></a>组合模式(构造函数+原型模式)</h2><p>在上一篇原型和继承的文章中我们介绍了原型, 原型可以用来存放共享的属性和方法, 构造函数用来新建实例自定义的属性<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Student</span>(<span class="params">name, age, id</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.name = name;</span><br><span class="line">  <span class="keyword">this</span>.age = age;</span><br><span class="line">  <span class="keyword">this</span>.id = id;</span><br><span class="line">&#125;</span><br><span class="line">Student.prototype.getId = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.id;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> shadow = <span class="keyword">new</span> Student(<span class="string">'Shadow'</span>, <span class="number">18</span>, <span class="number">13201</span>);</span><br></pre></td></tr></table></figure></p>
+<p>我们一般采取这种方式作为ES5实现类的默认方式</p>
+<h2 id="寄生构造函数模式"><a href="#寄生构造函数模式" class="headerlink" title="寄生构造函数模式"></a>寄生构造函数模式</h2><p>这种模式的作用仅仅是封装创建对象的代码, 返回新创建的对象, 但是使用方法跟构造函数一样.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">MyArray</span>(<span class="params">arr</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> o = <span class="keyword">new</span> <span class="built_in">Array</span>(arr);</span><br><span class="line"></span><br><span class="line">  o.toMyString = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.join(<span class="string">','</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 重写构造函数的返回</span></span><br><span class="line">  <span class="keyword">return</span> o;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> arr = <span class="keyword">new</span> MyArray([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]);</span><br></pre></td></tr></table></figure></p>
+<p>我们可以看到这个方法通过return重写了new时的返回来达到效果,<br>假设我们想创建一个具有额外方法的特殊数组。由于不能直接修改Array构造函数，因此可以使用这个模式</p>
+<h2 id="稳妥构造函数模式"><a href="#稳妥构造函数模式" class="headerlink" title="稳妥构造函数模式"></a>稳妥构造函数模式</h2><p>构建除了使用暴露出来的方法,否则外部无法访问的对象<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Student</span>(<span class="params">name</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> o = <span class="keyword">new</span> <span class="built_in">Object</span>();</span><br><span class="line">  o.getName = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> name;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> o;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> shadow = <span class="keyword">new</span> Student(<span class="string">'Shadow'</span>);</span><br></pre></td></tr></table></figure></p>
+<p>上述模式创建的对象, 除了使用getName方法之外, 没有其他途径得到shadow的name,<br>实现原理是通过闭包</p>
+
+  </div>
+</article>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/source_code_read/">Home</a></li>
+         
+          <li><a href="/source_code_read/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#工厂模式"><span class="toc-number">1.</span> <span class="toc-text">工厂模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#构造函数模式"><span class="toc-number">2.</span> <span class="toc-text">构造函数模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#组合模式-构造函数-原型模式"><span class="toc-number">3.</span> <span class="toc-text">组合模式(构造函数+原型模式)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#寄生构造函数模式"><span class="toc-number">4.</span> <span class="toc-text">寄生构造函数模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#稳妥构造函数模式"><span class="toc-number">5.</span> <span class="toc-text">稳妥构造函数模式</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&text=对象创建&amp;类的实现"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&title=对象创建&amp;类的实现"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&is_video=false&description=对象创建&amp;类的实现"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=对象创建&amp;类的实现&body=Check out this article: https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&title=对象创建&amp;类的实现"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&title=对象创建&amp;类的实现"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&title=对象创建&amp;类的实现"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&title=对象创建&amp;类的实现"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://caoyi5225.github.io/source_code_read/2019/03/12/classInES5/&name=对象创建&amp;类的实现&description="><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick="$("#toc-footer").toggle();return false;"><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick="$("#share-footer").toggle();return false;"><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick="$("#nav-footer").toggle();return false;"><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2019 Cao Yi
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/source_code_read/">Home</a></li>
+         
+          <li><a href="/source_code_read/archives/">Writing</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/source_code_read/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/source_code_read/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/source_code_read/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/source_code_read/lib/jquery/jquery.min.js"></script>
+<script src="/source_code_read/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/source_code_read/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <script type="text/javascript">
+        (function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-86660611-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+<!-- Disqus Comments -->
+
+
