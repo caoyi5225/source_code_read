@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="Then/Promise 是ES6 Promise的一个polyfill, 学习其源码有助于我们深入理解Promise Promise类1234567891011121314function Promise(fn) &amp;#123;  if (typeof this !== &apos;object&apos;) &amp;#123;    throw new TypeError(&apos;Promises must be constr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="promise源码解析">
+<meta property="og:url" content="https://caoyi5225.github.io/source_code_read/2019/03/04/promise/index.html">
+<meta property="og:site_name" content="Shadow&#39;s Blog">
+<meta property="og:description" content="Then/Promise 是ES6 Promise的一个polyfill, 学习其源码有助于我们深入理解Promise Promise类1234567891011121314function Promise(fn) &amp;#123;  if (typeof this !== &apos;object&apos;) &amp;#123;    throw new TypeError(&apos;Promises must be constr">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-03-12T08:25:44.604Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="promise源码解析">
+<meta name="twitter:description" content="Then/Promise 是ES6 Promise的一个polyfill, 学习其源码有助于我们深入理解Promise Promise类1234567891011121314function Promise(fn) &amp;#123;  if (typeof this !== &apos;object&apos;) &amp;#123;    throw new TypeError(&apos;Promises must be constr">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/source_code_read/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/source_code_read/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/source_code_read/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>promise源码解析</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/source_code_read/css/style.css">
+    <!-- rss -->
+    
+    
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/source_code_read/">Home</a></li>
+         
+          <li><a href="/source_code_read/archives/">Writing</a></li>
+        
+      </ul>
+    </span>
+    <br>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/source_code_read/2019/03/04/inheritAndProperty/"><i class="fa fa-chevron-left" aria-hidden="true" onmouseover="$("#i-prev").toggle();" onmouseout="$("#i-prev").toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" href="/source_code_read/2018/11/30/redux/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover="$("#i-next").toggle();" onmouseout="$("#i-next").toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover="$("#i-top").toggle();" onmouseout="$("#i-top").toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover="$("#i-share").toggle();" onmouseout="$("#i-share").toggle();" onclick="$("#share").toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&text=promise源码解析"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&title=promise源码解析"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&is_video=false&description=promise源码解析"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=promise源码解析&body=Check out this article: https://caoyi5225.github.io/source_code_read/2019/03/04/promise/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&title=promise源码解析"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&title=promise源码解析"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&title=promise源码解析"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&title=promise源码解析"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&name=promise源码解析&description="><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Promise类"><span class="toc-number">1.</span> <span class="toc-text">Promise类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#final方法"><span class="toc-number">2.</span> <span class="toc-text">final方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#doResolve方法"><span class="toc-number">3.</span> <span class="toc-text">doResolve方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#resove方法"><span class="toc-number">4.</span> <span class="toc-text">resove方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#reject方法"><span class="toc-number">5.</span> <span class="toc-text">reject方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#then方法"><span class="toc-number">6.</span> <span class="toc-text">then方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Handler类"><span class="toc-number">7.</span> <span class="toc-text">Handler类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#handle方法"><span class="toc-number">8.</span> <span class="toc-text">handle方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#handleResolved方法"><span class="toc-number">9.</span> <span class="toc-text">handleResolved方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-number">10.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index width mx-auto px2 my4">
+        
+        <article class="post" itemscope="" itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        promise源码解析
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+        <span itemprop="name">Shadow's Blog</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2019-03-04T07:27:49.000Z" itemprop="datePublished">2019-03-04</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>Then/Promise 是ES6 Promise的一个polyfill, 学习其源码有助于我们深入理解Promise</p>
+<h3 id="Promise类"><a href="#Promise类" class="headerlink" title="Promise类"></a>Promise类</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Promise</span>(<span class="params">fn</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="keyword">this</span> !== <span class="string">'object'</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'Promises must be constructed via new'</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> fn !== <span class="string">'function'</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'Promise constructor\'s argument is not a function'</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">this</span>._deferredState = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">this</span>._state = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">this</span>._value = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">this</span>._deferreds = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">if</span> (fn === noop) <span class="keyword">return</span>;</span><br><span class="line">  doResolve(fn, <span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以看到, Promise的构造函数很简单, 做了三件事情:</p>
+<ul>
+<li>调用方式和参数检测</li>
+<li>初始化属性<br>|名称|类型|默认值|描述|<br>|—-|—-|——|—-|<br>|_state|Number|0|Promise状态,0-pending,1-fulfilled且_value不是promise,2-rejected,3-fulfilled且_value是promise|<br>|_deferredState|Number|0|deferred状态|<br>|_value|Any|null|Promise 内部值，resolve 或者 reject返回的值|<br>|_deferreds|Array|null|存放 Handle 实例对象的数组，缓存 then 方法传入的回调|</li>
+<li>调用excute函数</li>
+</ul>
+<h3 id="final方法"><a href="#final方法" class="headerlink" title="final方法"></a>final方法</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">finale</span>(<span class="params">self</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (self._deferredState === <span class="number">1</span>) &#123;</span><br><span class="line">    handle(self, self._deferreds);</span><br><span class="line">    self._deferreds = <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (self._deferredState === <span class="number">2</span>) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; self._deferreds.length; i++) &#123;</span><br><span class="line">      handle(self, self._deferreds[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    self._deferreds = <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用来在resolve或reject时执行.then保存的异步任务<br>具体逻辑就是通过deferredState判断有几个异步任务,<br>如果有一个就直接handle, 两个及以上就遍历handle,<br>然后清空异步任务列表</p>
+<h3 id="doResolve方法"><a href="#doResolve方法" class="headerlink" title="doResolve方法"></a>doResolve方法</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">doResolve</span>(<span class="params">fn, promise</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> done = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">var</span> res = tryCallTwo(fn, <span class="function"><span class="keyword">function</span> (<span class="params">value</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (done) <span class="keyword">return</span>;</span><br><span class="line">    done = <span class="literal">true</span>;</span><br><span class="line">    resolve(promise, value);</span><br><span class="line">  &#125;, <span class="function"><span class="keyword">function</span> (<span class="params">reason</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (done) <span class="keyword">return</span>;</span><br><span class="line">    done = <span class="literal">true</span>;</span><br><span class="line">    reject(promise, reason);</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">if</span> (!done &amp;&amp; res === IS_ERROR) &#123;</span><br><span class="line">    done = <span class="literal">true</span>;</span><br><span class="line">    reject(promise, LAST_ERROR);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>本方法意在执行传入Promise的函数,<br>需要注意的地方是, 通过done字段来确保fn只执行一次,<br>另外,tryCallTwo的作用是将第二、三个参数作为参数调用第一个参数, 如果报错则返回错误信息</p>
+<h3 id="resove方法"><a href="#resove方法" class="headerlink" title="resove方法"></a>resove方法</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">resolve</span>(<span class="params">self, newValue</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 不能把自身作为resolved的参数</span></span><br><span class="line">  <span class="keyword">if</span> (newValue === self) &#123;</span><br><span class="line">    <span class="keyword">return</span> reject(</span><br><span class="line">      self,</span><br><span class="line">      <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'A promise cannot be resolved with itself.'</span>)</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    newValue &amp;&amp;</span><br><span class="line">    (<span class="keyword">typeof</span> newValue === <span class="string">'object'</span> || <span class="keyword">typeof</span> newValue === <span class="string">'function'</span>)</span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="keyword">var</span> then = getThen(newValue);</span><br><span class="line">    <span class="keyword">if</span> (then === IS_ERROR) &#123;</span><br><span class="line">      <span class="keyword">return</span> reject(self, LAST_ERROR);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// resolve新的promise</span></span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      then === self.then &amp;&amp;</span><br><span class="line">      newValue <span class="keyword">instanceof</span> <span class="built_in">Promise</span></span><br><span class="line">    ) &#123;</span><br><span class="line">      self._state = <span class="number">3</span>;</span><br><span class="line">      self._value = newValue;</span><br><span class="line">      finale(self);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    <span class="comment">// 不是promise但.then是一个function  </span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> then === <span class="string">'function'</span>) &#123;</span><br><span class="line">      doResolve(then.bind(newValue), self);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 参数是一个普通值</span></span><br><span class="line">  self._state = <span class="number">1</span>;</span><br><span class="line">  self._value = newValue;</span><br><span class="line">  finale(self);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以看到,resolve方法对不同的参数处理方式是不同的</p>
+<ol>
+<li>如果是本promise对象本身,则报错;</li>
+<li>如果是新promise, 则将_state置为3, 赋值_value, 执行final;</li>
+<li>如果不是新promise但是.then是function, 则将.then作为新的一个处理函数通过doResolve调用;</li>
+<li>如果以上均不匹配(普通值), _state置为1, 赋值_value, 执行final;</li>
+</ol>
+<h3 id="reject方法"><a href="#reject方法" class="headerlink" title="reject方法"></a>reject方法</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">reject</span>(<span class="params">self, newValue</span>) </span>&#123;</span><br><span class="line">  self._state = <span class="number">2</span>;</span><br><span class="line">  self._value = newValue;</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Promise</span>._onReject) &#123;</span><br><span class="line">    <span class="built_in">Promise</span>._onReject(self, newValue);</span><br><span class="line">  &#125;</span><br><span class="line">  finale(self);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>reject方法相对简单, state置为2, 赋值_value, 执行Promise._onReject, 执行finale</p>
+<h3 id="then方法"><a href="#then方法" class="headerlink" title="then方法"></a>then方法</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.prototype.then = <span class="function"><span class="keyword">function</span>(<span class="params">onFulfilled, onRejected</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.constructor !== <span class="built_in">Promise</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> safeThen(<span class="keyword">this</span>, onFulfilled, onRejected);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> res = <span class="keyword">new</span> <span class="built_in">Promise</span>(noop);</span><br><span class="line">  handle(<span class="keyword">this</span>, <span class="keyword">new</span> Handler(onFulfilled, onRejected, res));</span><br><span class="line">  <span class="keyword">return</span> res;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>then方法是实现链式调用的核心, 实现原理就是每次都返回一个新的promise.另外, then将生成一个异步任务在resolve之后执行</p>
+<h3 id="Handler类"><a href="#Handler类" class="headerlink" title="Handler类"></a>Handler类</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Handler</span>(<span class="params">onFulfilled, onRejected, promise</span>)</span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.onFulfilled = <span class="keyword">typeof</span> onFulfilled === <span class="string">'function'</span> ? onFulfilled : <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">this</span>.onRejected = <span class="keyword">typeof</span> onRejected === <span class="string">'function'</span> ? onRejected : <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">this</span>.promise = promise;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该类的属性:<br>|名称|类型|默认值|描述|<br>|—-|—-|——|—-|<br>|onFulfilled|Function|null|resolve的回调|<br>|onRejected|Function|null|reject的回调|<br>|promise|Function|null|要返回的新promise|</p>
+<h3 id="handle方法"><a href="#handle方法" class="headerlink" title="handle方法"></a>handle方法</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params">self, deferred</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (self._state === <span class="number">3</span>) &#123;</span><br><span class="line">    self = self._value;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Promise</span>._onHandle) &#123;</span><br><span class="line">    <span class="built_in">Promise</span>._onHandle(self);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (self._state === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (self._deferredState === <span class="number">0</span>) &#123;</span><br><span class="line">      self._deferredState = <span class="number">1</span>;</span><br><span class="line">      self._deferreds = deferred;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (self._deferredState === <span class="number">1</span>) &#123;</span><br><span class="line">      self._deferredState = <span class="number">2</span>;</span><br><span class="line">      self._deferreds = [self._deferreds, deferred];</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    self._deferreds.push(deferred);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  handleResolved(self, deferred);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法是处理异步任务的核心方法之一, 我们看下处理的逻辑:</p>
+<ol>
+<li>如果在handle执行的时候, promise的状态已经变为了fulfilled, 且返回的值是新的promise, 那么可以跳过当前promise, 直接处理下一个promise</li>
+<li>执行全局绑定的Prmomise._onHanlde方法</li>
+<li>如果promise处于pendding状态, 则将异步任务放入defferreds数组, deferredState记录异步任务数量, 超过1个都记录为2</li>
+<li>调用handleResolved调用异步任务</li>
+</ol>
+<h3 id="handleResolved方法"><a href="#handleResolved方法" class="headerlink" title="handleResolved方法"></a>handleResolved方法</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">handleResolved</span>(<span class="params">self, deferred</span>) </span>&#123;</span><br><span class="line">  asap(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> cb = self._state === <span class="number">1</span> ? deferred.onFulfilled : deferred.onRejected;</span><br><span class="line">    <span class="keyword">if</span> (cb === <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (self._state === <span class="number">1</span>) &#123;</span><br><span class="line">        resolve(deferred.promise, self._value);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        reject(deferred.promise, self._value);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> ret = tryCallOne(cb, self._value);</span><br><span class="line">    <span class="keyword">if</span> (ret === IS_ERROR) &#123;</span><br><span class="line">      reject(deferred.promise, LAST_ERROR);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      resolve(deferred.promise, ret);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>顾名思义,本方法的作用是处理已经resolved的promise通过.then创建的任务<br>本方法用到了一个工具<a href="https://github.com/kriskowal/asap" target="_blank" rel="noopener">asap</a>,官方介绍是:</p>
+<blockquote>
+<p>executes a task as soon as possible but not before it returns, waiting only for the completion of the current event and previously scheduled tasks<br>即: 在当前事件和先前计划的任务完成后尽快执行 </p>
+</blockquote>
+<p>接下来看逻辑:</p>
+<ol>
+<li>如果state是1, 则说明该promise是fulfilled, 如果不是1, 则说明该promise是rejected(因为在handle方法里会跳过所有state为3的promise, 所以fulfilled的promise只有state为1的)</li>
+<li>果未传入对应onFulfilled和onFejected的方法, 直接resolve/reject handler</li>
+<li>否则, 先执行对应的方法再resolve/reject handler并将对应处理方法返回的数据作为value传入</li>
+</ol>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ol>
+<li>能够链式调用的原因是每个then都会返回一个新的Promise(state = 3)</li>
+<li>能够实现异步执行的原因是把每个异步任务都放在最后一个Promise里执行的</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/source_code_read/">Home</a></li>
+         
+          <li><a href="/source_code_read/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Promise类"><span class="toc-number">1.</span> <span class="toc-text">Promise类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#final方法"><span class="toc-number">2.</span> <span class="toc-text">final方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#doResolve方法"><span class="toc-number">3.</span> <span class="toc-text">doResolve方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#resove方法"><span class="toc-number">4.</span> <span class="toc-text">resove方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#reject方法"><span class="toc-number">5.</span> <span class="toc-text">reject方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#then方法"><span class="toc-number">6.</span> <span class="toc-text">then方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Handler类"><span class="toc-number">7.</span> <span class="toc-text">Handler类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#handle方法"><span class="toc-number">8.</span> <span class="toc-text">handle方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#handleResolved方法"><span class="toc-number">9.</span> <span class="toc-text">handleResolved方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-number">10.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&text=promise源码解析"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&title=promise源码解析"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&is_video=false&description=promise源码解析"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=promise源码解析&body=Check out this article: https://caoyi5225.github.io/source_code_read/2019/03/04/promise/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&title=promise源码解析"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&title=promise源码解析"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&title=promise源码解析"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&title=promise源码解析"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://caoyi5225.github.io/source_code_read/2019/03/04/promise/&name=promise源码解析&description="><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick="$("#toc-footer").toggle();return false;"><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick="$("#share-footer").toggle();return false;"><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick="$("#nav-footer").toggle();return false;"><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2019 Cao Yi
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/source_code_read/">Home</a></li>
+         
+          <li><a href="/source_code_read/archives/">Writing</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/source_code_read/lib/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/source_code_read/lib/meslo-LG/styles.css">
+<link rel="stylesheet" href="/source_code_read/lib/justified-gallery/justifiedGallery.min.css">
+
+
+<!-- jquery -->
+<script src="/source_code_read/lib/jquery/jquery.min.js"></script>
+<script src="/source_code_read/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/source_code_read/js/main.js"></script>
+<!-- Google Analytics -->
+
+    <script type="text/javascript">
+        (function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-86660611-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+<!-- Disqus Comments -->
+
+
